@@ -3,6 +3,8 @@ from braket.aws import AwsDevice
 from braket.devices import LocalSimulator
 from braket.circuits import Circuit
 
+import settings
+
 def create_circuit(bits:int=8)->Circuit:
     circ = Circuit()
     for i in range(bits):
@@ -10,10 +12,10 @@ def create_circuit(bits:int=8)->Circuit:
     return circ
 
 def qice(circ:Circuit)->int:
-    device = AwsDevice("arn:aws:braket:::device/qpu/rigetti/Aspen-8")
-    task = device.run(circ, 'qice', poll_timeout_seconds=24*60*60)
+    device = AwsDevice(settings.device_arn)
+    task = device.run(circ, (settings.s3_bucket,'qice'), poll_timeout_seconds=24*60*60, shots=1)
     result = task.result()
-    count = result.measurement_counts
+    counts = result.measurement_counts
     result_int = int(list(counts.keys())[0],2)
     return result_int
 
